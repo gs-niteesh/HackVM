@@ -1,5 +1,6 @@
-#include "header.h"
-#include "Parser.h"
+#include <header.h>
+#include <Parser.h>
+#include <CodeGenerator.h>
 
 void handle_arguments(int argc, char *argv[],
                 std::string &in, std::string &out);
@@ -18,9 +19,11 @@ int main(int argc, char **argv){
         error("Error opening input file!");
     
     Parser p(in);
+    CodeGenerator cg(out_filename);
 
     while(p.next()){
         p.command(inst);
+        cg.generateCode(inst);
     }
 
     return 0;

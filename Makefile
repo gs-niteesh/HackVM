@@ -1,5 +1,5 @@
 CC = g++
 CFLAGS = -g -Iinclude/
 
-VM: src/VM.cpp src/Parser.cpp
-	$(CC) $(CFLAGS) -o VM src/VM.cpp src/Parser.cpp
+VM: src/VM.cpp src/Parser.cpp src/CodeGenerator.cpp
+	$(CC) $(CFLAGS) -o VM src/VM.cpp src/Parser.cpp src/CodeGenerator.cpp
