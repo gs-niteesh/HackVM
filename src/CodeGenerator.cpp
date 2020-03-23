@@ -20,6 +20,7 @@ static const char *
         " LOCAL ",
         " TEMP ",
         " STATIC ",
+        " POINTER ",
         " THIS ",
         " THAT ",
         " ARGUMENT ",
@@ -28,6 +29,11 @@ static const char *
 CodeGenerator::CodeGenerator(std::string &file)
 {
     out.open(file, std::ios::out | std::ios::trunc);
+
+    std::size_t end = file.rfind('/');
+
+    filename = file.substr(end + 1);
+    filename = filename.substr(0, filename.length() - 3);
 
     if (!out.is_open())
     {
@@ -41,7 +47,7 @@ void CodeGenerator::generateCode(struct instruction &inst)
     if (inst.op == OP::INVALID) {
         return ;
     }
-    ostream << printInstruction(inst) << "\n";
+    ostream << "\n" << printInstruction(inst);
     writePushPop(inst);
     writeArithmetic(inst);
 }
@@ -235,6 +241,30 @@ void CodeGenerator::writeArithmetic(struct instruction &inst)
         "A=M\n"        \
         "M=D\n"
 
+#define PUSH_POINTER(x) \
+        "@" x "\n"      \
+        "D=M\n"         \
+        PUSH_STACK
+
+#define POP_POINTER(x) \
+        "@SP\n"        \
+        "AM=M-1\n"     \
+        "D=M\n"        \
+        "@" x "\n"     \
+        "M=D\n"
+
+#define PUSH_STATIC(x, i) \
+        "@" + x + std::to_string(i) + "\n" \
+        "D=M\n"            \
+        PUSH_STACK
+
+#define POP_STATIC(x, i) \
+        "@SP\n"        \
+        "AM=M-1\n"     \
+        "D=M\n"        \
+        "@" + x + std::to_string(i) + "\n" \
+        "M=D\n"
+
 void CodeGenerator::push(SEGMENT seg, int offset)
 {
     switch (seg)
@@ -243,18 +273,23 @@ void CodeGenerator::push(SEGMENT seg, int offset)
         ostream << PUSH_CONSTANT(offset);
         break;
     case SEGMENT::LOCAL:
-        ostream << PUSH_SEGMENT("LCL", offset); ;
+        ostream << PUSH_SEGMENT("LCL", offset);
         break;
     case SEGMENT::ARGUMENT:
-        ostream << PUSH_SEGMENT("ARG", offset);;
+        ostream << PUSH_SEGMENT("ARG", offset);
         break;
     case SEGMENT::THIS:
-        ostream << PUSH_SEGMENT("THIS", offset); 
+        ostream << PUSH_SEGMENT("THIS", offset);
         break;
     case SEGMENT::THAT:
-        ostream << PUSH_SEGMENT("THAT", offset); 
+        ostream << PUSH_SEGMENT("THAT", offset);
         break;
     case SEGMENT::STATIC:
+        ostream << PUSH_STATIC(filename, offset);
+        break;
+    case SEGMENT::POINTER:
+        if (offset == 0) ostream << PUSH_POINTER("THIS");
+        else             ostream << PUSH_POINTER("THAT");
         break;
     case SEGMENT::TEMP:
         ostream << PUSH_TEMP(offset); 
@@ -279,6 +314,11 @@ void CodeGenerator::pop(SEGMENT seg, int offset)
         ostream << POP_SEGMENT("THAT", offset); 
         break;
     case SEGMENT::STATIC:
+        ostream << POP_STATIC(filename, offset);
+        break;
+    case SEGMENT::POINTER:
+        if (offset == 0) ostream << POP_POINTER("THIS");
+        else             ostream << POP_POINTER("THAT");
         break;
     case SEGMENT::TEMP:
         ostream << POP_TEMP(offset); 

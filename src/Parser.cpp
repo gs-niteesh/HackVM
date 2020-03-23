@@ -62,6 +62,8 @@ static SEGMENT segment(const std::string &str)
         return SEGMENT::TEMP;
     } else if (str == "static") {
         return SEGMENT::STATIC;
+    } else if (str == "pointer") {
+        return SEGMENT::POINTER;
     } else if (str == "argument") {
         return SEGMENT::ARGUMENT;
     }

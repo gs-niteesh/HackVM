@@ -10,6 +10,7 @@ class CodeGenerator{
     private:
         std::ostringstream ostream;
         std::ofstream out;
+        std::string filename;
         void push(SEGMENT seg, int offset);
         void writeArithmetic(struct instruction &);
         void writePushPop(struct instruction &);

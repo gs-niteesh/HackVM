@@ -22,6 +22,7 @@ typedef enum class SEGMENT{
     LOCAL,
     TEMP,
     STATIC,
+    POINTER,
     THIS,
     THAT,
     ARGUMENT,
