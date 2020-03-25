@@ -11,8 +11,8 @@ class CodeGenerator{
         std::ostringstream ostream;
         std::ofstream out;
         std::string filename;
-        void push(SEGMENT seg, int offset);
+        void push(SEGMENT seg, const std::string &offset);
         void writeArithmetic(struct instruction &);
         void writePushPop(struct instruction &);
-        void pop(SEGMENT seg, int offset);
+        void pop(SEGMENT seg, const std::string &offset);
 };

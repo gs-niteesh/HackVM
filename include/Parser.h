@@ -34,7 +34,7 @@ struct instruction
 {
     OP op;
     SEGMENT segment;
-    int offset;
+    std::string offset;
 }; 
 
 class Parser

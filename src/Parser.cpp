@@ -83,10 +83,10 @@ void Parser::parse(const std::string &line, instruction &inst)
         inst.op = operation(tokens[0]);
         if (size != 1){
             inst.segment = segment(tokens[1]);
-            inst.offset = atoi(tokens[2].c_str());
+            inst.offset = tokens[2];
         }else {
             inst.segment = SEGMENT::NIL;
-            inst.offset = 0;
+            inst.offset = "";
         }
     }else{
         inst.op = OP::INVALID;

@@ -184,7 +184,7 @@ void CodeGenerator::writeArithmetic(struct instruction &inst)
 }
 
 #define OFFSET(x)   \
-        "@" + std::to_string(x) + "\n" \
+        "@" + x + "\n" \
 
 #define PUSH_STACK  \
         "@SP\n"     \
@@ -254,7 +254,7 @@ void CodeGenerator::writeArithmetic(struct instruction &inst)
         "M=D\n"
 
 #define PUSH_STATIC(x, i) \
-        "@" + x + std::to_string(i) + "\n" \
+        "@" + x + i + "\n" \
         "D=M\n"            \
         PUSH_STACK
 
@@ -262,10 +262,10 @@ void CodeGenerator::writeArithmetic(struct instruction &inst)
         "@SP\n"        \
         "AM=M-1\n"     \
         "D=M\n"        \
-        "@" + x + std::to_string(i) + "\n" \
+        "@" + x + i + "\n" \
         "M=D\n"
 
-void CodeGenerator::push(SEGMENT seg, int offset)
+void CodeGenerator::push(SEGMENT seg, const std::string &offset)
 {
     switch (seg)
     {
@@ -288,7 +288,7 @@ void CodeGenerator::push(SEGMENT seg, int offset)
         ostream << PUSH_STATIC(filename, offset);
         break;
     case SEGMENT::POINTER:
-        if (offset == 0) ostream << PUSH_POINTER("THIS");
+        if (offset == "0") ostream << PUSH_POINTER("THIS");
         else             ostream << PUSH_POINTER("THAT");
         break;
     case SEGMENT::TEMP:
@@ -297,7 +297,7 @@ void CodeGenerator::push(SEGMENT seg, int offset)
     }
 }
 
-void CodeGenerator::pop(SEGMENT seg, int offset)
+void CodeGenerator::pop(SEGMENT seg, const std::string &offset)
 {
     switch (seg)
     {
@@ -317,7 +317,7 @@ void CodeGenerator::pop(SEGMENT seg, int offset)
         ostream << POP_STATIC(filename, offset);
         break;
     case SEGMENT::POINTER:
-        if (offset == 0) ostream << POP_POINTER("THIS");
+        if (offset == "0") ostream << POP_POINTER("THIS");
         else             ostream << POP_POINTER("THAT");
         break;
     case SEGMENT::TEMP:
@@ -338,7 +338,7 @@ std::string CodeGenerator::printInstruction(const struct instruction &inst)
         if (inst.segment != SEGMENT::NIL)
         {
             result += SEGMENTS[static_cast<uint32_t>(inst.segment)];
-            result += std::to_string(inst.offset);
+            result += inst.offset;
         }
         result += "\n";
     }
