@@ -2,32 +2,32 @@
 #include "ASM.h"
 
 static const char *OPS[static_cast<uint32_t>(OP::MAX_OP)] = {
-    "PUSH",
-    "POP",
-    "ADD",
-    "SUB",
-    "NEG",
-    "EQ",
-    "GT",
-    "LT",
-    "AND",
-    "OR",
-    "NOT",
-    "LABEL",
-    "GOTO",
-    "IFGOTO"
+    "PUSH ",
+    "POP ",
+    "ADD ",
+    "SUB ",
+    "NEG ",
+    "EQ ",
+    "GT ",
+    "LT ",
+    "AND ",
+    "OR ",
+    "NOT ",
+    "LABEL ",
+    "GOTO ",
+    "IFGOTO "
 };
 
 static const char *
     SEGMENTS[static_cast<uint32_t>(SEGMENT::MAX_SEGMENT)] = {
-        " CONSTANT ",
-        " LOCAL ",
-        " TEMP ",
-        " STATIC ",
-        " POINTER ",
-        " THIS ",
-        " THAT ",
-        " ARGUMENT ",
+        "CONSTANT ",
+        "LOCAL ",
+        "TEMP ",
+        "STATIC ",
+        "POINTER ",
+        "THIS ",
+        "THAT ",
+        "ARGUMENT ",
 };
 
 CodeGenerator::CodeGenerator(std::string &file)
@@ -197,8 +197,8 @@ std::string CodeGenerator::printInstruction(const struct instruction &inst)
         if (inst.segment != SEGMENT::NIL)
         {
             result += SEGMENTS[static_cast<uint32_t>(inst.segment)];
-            result += inst.offset;
         }
+        result += inst.offset;
         result += "\n";
     }
     return result;
