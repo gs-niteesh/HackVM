@@ -13,6 +13,9 @@ typedef enum class OP {
     AND,
     OR,
     NOT,
+    LABEL,
+    GOTO,
+    IFGOTO,
     INVALID,
     MAX_OP
 }OP;

@@ -12,6 +12,9 @@ static const char *OPS[static_cast<uint32_t>(OP::MAX_OP)] = {
     "AND",
     "OR",
     "NOT",
+    "LABEL",
+    "GOTO",
+    "IFGOTO"
 };
 
 static const char *
@@ -50,6 +53,8 @@ void CodeGenerator::generateCode(struct instruction &inst)
     ostream << "\n" << printInstruction(inst);
     writePushPop(inst);
     writeArithmetic(inst);
+    writeLabel(inst);
+    writeConditions(inst);
 }
 
 void CodeGenerator::writePushPop(struct instruction &inst)
@@ -62,6 +67,39 @@ void CodeGenerator::writePushPop(struct instruction &inst)
     case OP::POP:
         pop(inst.segment, inst.offset);
         break;
+    }
+}
+
+#define OFFSET(x)   \
+        "@" + x + "\n"
+
+#define LABEL(x)    \
+        "(" + x + ")\n"
+
+#define GOTO(x)   \
+        OFFSET(x) \
+        "0;JMP\n"
+
+#define IFGOTO(x)   \
+        "@SP\n"     \
+        "AM=M-1\n"  \
+        "D=M\n"     \
+        OFFSET(x)   \
+        "D;JNE\n"
+
+void CodeGenerator::writeLabel(struct instruction &inst)
+{
+    if (inst.op == OP::LABEL) {
+        ostream << LABEL(inst.offset);
+    }
+}
+
+void CodeGenerator::writeConditions(struct instruction &inst)
+{
+    if (inst.op == OP::GOTO) {
+        ostream << GOTO(inst.offset);
+    }else if (inst.op == OP::IFGOTO) {
+        ostream << IFGOTO(inst.offset);
     }
 }
 
@@ -183,9 +221,6 @@ void CodeGenerator::writeArithmetic(struct instruction &inst)
     i++;
 }
 
-#define OFFSET(x)   \
-        "@" + x + "\n" \
-
 #define PUSH_STACK  \
         "@SP\n"     \
         "AM=M+1\n"  \
@@ -193,7 +228,7 @@ void CodeGenerator::writeArithmetic(struct instruction &inst)
         "M=D\n" 
 
 #define PUSH_CONSTANT(x) \
-        OFFSET(offset)  \
+        OFFSET(x)  \
         "D=A\n"         \
         PUSH_STACK
 

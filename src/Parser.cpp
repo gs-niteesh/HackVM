@@ -45,6 +45,12 @@ static OP operation(const std::string &str)
         return OP::OR;
     } else if (str == "not") {
         return OP::NOT;
+    } else if (str == "label") {
+        return OP::LABEL;
+    } else if (str == "if-goto") {
+        return OP::IFGOTO;
+    } else if (str == "goto") {
+        return OP::GOTO;
     }
 }
 
@@ -67,6 +73,7 @@ static SEGMENT segment(const std::string &str)
     } else if (str == "argument") {
         return SEGMENT::ARGUMENT;
     }
+    return SEGMENT::NIL;
 }
 
 void Parser::parse(const std::string &line, instruction &inst)
@@ -78,12 +85,14 @@ void Parser::parse(const std::string &line, instruction &inst)
         tokens.push_back(token);
     }
     std::size_t size = tokens.size();
-
     if(size != 0){
         inst.op = operation(tokens[0]);
-        if (size != 1){
+        if (size == 3){
             inst.segment = segment(tokens[1]);
             inst.offset = tokens[2];
+        }else if(size == 2){
+            inst.segment = SEGMENT::NIL;
+            inst.offset = tokens[1];
         }else {
             inst.segment = SEGMENT::NIL;
             inst.offset = "";

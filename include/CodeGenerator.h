@@ -14,5 +14,7 @@ class CodeGenerator{
         void push(SEGMENT seg, const std::string &offset);
         void writeArithmetic(struct instruction &);
         void writePushPop(struct instruction &);
+        void writeLabel(struct instruction &);
+        void writeConditions(struct instruction &);
         void pop(SEGMENT seg, const std::string &offset);
 };
