@@ -16,6 +16,9 @@ typedef enum class OP {
     LABEL,
     GOTO,
     IFGOTO,
+    FUNCTION,
+    CALL,
+    RETURN,
     INVALID,
     MAX_OP
 }OP;
@@ -38,6 +41,7 @@ struct instruction
     OP op;
     SEGMENT segment;
     std::string offset;
+    std::string label_name;
 }; 
 
 class Parser

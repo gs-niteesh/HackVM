@@ -2,48 +2,50 @@
 #include "ASM.h"
 
 static const char *OPS[static_cast<uint32_t>(OP::MAX_OP)] = {
-    "PUSH ",
-    "POP ",
-    "ADD ",
-    "SUB ",
-    "NEG ",
-    "EQ ",
-    "GT ",
-    "LT ",
-    "AND ",
-    "OR ",
-    "NOT ",
-    "LABEL ",
-    "GOTO ",
-    "IFGOTO "
+    "push ",
+    "pop ",
+    "add ",
+    "sub ",
+    "neg ",
+    "eq ",
+    "gt ",
+    "lt ",
+    "and ",
+    "or ",
+    "not ",
+    "label ",
+    "goto ",
+    "ifgoto ",
+    "function ",
+    "call ",
+    "return "
 };
 
 static const char *
     SEGMENTS[static_cast<uint32_t>(SEGMENT::MAX_SEGMENT)] = {
-        "CONSTANT ",
-        "LOCAL ",
-        "TEMP ",
-        "STATIC ",
-        "POINTER ",
-        "THIS ",
-        "THAT ",
-        "ARGUMENT ",
+        "constant ",
+        "local ",
+        "temp ",
+        "static ",
+        "pointer ",
+        "this ",
+        "that ",
+        "argument ",
+        ""
 };
+
+static std::string currentFunction = "";
 
 CodeGenerator::CodeGenerator(std::string &file)
 {
-    out.open(file, std::ios::out | std::ios::trunc);
-
-    std::size_t end = file.rfind('/');
-
-    filename = file.substr(end + 1);
-    filename = filename.substr(0, filename.length() - 3);
+    out.open(file, std::ios::app);
 
     if (!out.is_open())
     {
         std::cerr << "Cannot open output file\n";
         exit(EXIT_FAILURE);
     }
+    bootstrapCode();
 }
 
 void CodeGenerator::generateCode(struct instruction &inst)
@@ -56,6 +58,17 @@ void CodeGenerator::generateCode(struct instruction &inst)
     writeArithmetic(inst);
     writeLabel(inst);
     writeConditions(inst);
+    writeFunction(inst);
+    writeCall(inst);
+    writeReturn(inst);
+}
+
+void CodeGenerator::currentFile(const std::string &name)
+{
+    std::size_t end = name.rfind('/');
+
+    filename = name.substr(end + 1);
+    filename = filename.substr(0, filename.length() - 2);
 }
 
 void CodeGenerator::writePushPop(struct instruction &inst)
@@ -124,6 +137,37 @@ void CodeGenerator::writeArithmetic(struct instruction &inst)
     i++;
 }
 
+void CodeGenerator::writeFunction(struct instruction &inst)
+{
+    if (inst.op == OP::FUNCTION){
+        int nargs = atoi(inst.offset.c_str());
+        currentFunction = inst.label_name;
+        ostream << FUNCTION(inst.label_name);
+        while(nargs--){
+            ostream << "@0\n" << "D=A\n" << PUSH_STACK;
+        }
+    }
+}
+
+void CodeGenerator::writeCall(struct instruction &inst)
+{
+    if (inst.op == OP::CALL){
+        int x = atoi(inst.offset.c_str()) + 5;
+        static int n = 0;
+        std::string returnFunc = currentFunction + "$ret" + std::to_string(n);
+        ostream << CALL(inst.label_name, returnFunc, std::to_string(x));
+        n++;
+    }
+}
+
+void CodeGenerator::writeReturn(struct instruction &inst)
+{
+    if (inst.op == OP::RETURN){
+        std::string returnFunc = currentFunction + "$ret";
+        ostream << RETURN(returnFunc);
+    }
+}
+
 void CodeGenerator::push(SEGMENT seg, const std::string &offset)
 {
     switch (seg)
@@ -185,6 +229,11 @@ void CodeGenerator::pop(SEGMENT seg, const std::string &offset)
     }
 }
 
+void CodeGenerator::bootstrapCode()
+{
+    ostream << BOOTSTRAP;
+}
+
 std::string CodeGenerator::printInstruction(const struct instruction &inst)
 {
 
@@ -193,10 +242,10 @@ std::string CodeGenerator::printInstruction(const struct instruction &inst)
     {
         result = "// ";
         result += OPS[static_cast<uint32_t>(inst.op)];
-
-        if (inst.segment != SEGMENT::NIL)
-        {
-            result += SEGMENTS[static_cast<uint32_t>(inst.segment)];
+        result += SEGMENTS[static_cast<uint32_t>(inst.segment)];
+        if (inst.label_name != "") {
+            result += inst.label_name;
+            result += " ";
         }
         result += inst.offset;
         result += "\n";

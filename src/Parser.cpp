@@ -51,6 +51,12 @@ static OP operation(const std::string &str)
         return OP::IFGOTO;
     } else if (str == "goto") {
         return OP::GOTO;
+    } else if (str == "function") {
+        return OP::FUNCTION;
+    } else if (str == "call") {
+        return OP::CALL;
+    } else if (str == "return") {
+        return OP::RETURN;
     }
 }
 
@@ -85,17 +91,23 @@ void Parser::parse(const std::string &line, instruction &inst)
         tokens.push_back(token);
     }
     std::size_t size = tokens.size();
+
     if(size != 0){
         inst.op = operation(tokens[0]);
+        inst.segment = SEGMENT::NIL;
+        inst.offset = "";
+        inst.label_name = "";
+
         if (size == 3){
             inst.segment = segment(tokens[1]);
+            if (inst.segment == SEGMENT::NIL && (inst.op == OP::FUNCTION
+                                             ||  inst.op == OP::CALL)) {
+                inst.label_name = tokens[1];
+            }
             inst.offset = tokens[2];
         }else if(size == 2){
             inst.segment = SEGMENT::NIL;
             inst.offset = tokens[1];
-        }else {
-            inst.segment = SEGMENT::NIL;
-            inst.offset = "";
         }
     }else{
         inst.op = OP::INVALID;
